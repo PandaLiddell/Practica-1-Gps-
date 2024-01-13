@@ -11,21 +11,39 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.content.Context
 import android.annotation.SuppressLint
-import android.location.LocationManager.*
+import android.location.LocationManager.GPS_PROVIDER
+import android.location.LocationManager.NETWORK_PROVIDER
+import com.google.android.gms.location.LocationServices
 
+@SuppressLint("RestrictedApi")
 class MainActivity : ComponentActivity() {
+	
+	    private lateinit var mFusedLocationClient: FusedLocationProviderClient
+		private lateinit var tvLatitude: TextView
+		private lateinit var tvLongitude: TextView
+		private lateinit var btnLocate: Button
+		
+		companion object{
+            const val PERMISSION_ID = 33
+        }
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_main)
+            
+            // Inicializar vistas después de inflar la interfaz de usuario
+			tvLatitude = findViewById(R.id.tvLatitude)
+			tvLongitude = findViewById(R.id.tvLongitude)
+			btnLocate = findViewById(R.id.btnLocate)
+
+			// Inicializar FusedLocationProviderClient
+			mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+			btnLocate.setOnClickListener {
+				getLocation()
+			}
         }
-        companion object{
-            const val PERMISSION_ID = 33
-        }
-        lateinit var mFusedLocationClient: FusedLocationProviderClient
-        val tvLatitude: TextView = findViewById(R.id.tvLatitude)
-        val tvLongitude: TextView = findViewById(R.id.tvLongitude)
-        val btnLocate: Button = findViewById(R.id.btnLocate)
+        
 
         private fun checkGranted(permission: String): Boolean{
             return ActivityCompat.checkSelfPermission(this, permission) ==
@@ -37,18 +55,11 @@ class MainActivity : ComponentActivity() {
                     checkGranted(Manifest.permission.ACCESS_FINE_LOCATION)
 
         private fun requestPermissions() {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ),
-                PERMISSION_ID
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_ID
             )
         }
         private fun isLocationEnabled(): Boolean {
-            val locationManager: LocationManager =
-                getSystemService(LOCATION_SERVICE) as LocationManager
+            val locationManager: LocationManager = getSystemService(LOCATION_SERVICE) as LocationManager
             return locationManager.isProviderEnabled(GPS_PROVIDER) || locationManager.isProviderEnabled(NETWORK_PROVIDER)
         }
         @SuppressLint("MissingPermission")
